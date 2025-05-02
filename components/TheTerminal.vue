@@ -48,16 +48,24 @@ const history = ref<IHistory[]>([
   },
 ]);
 
-const handleCommand = (args: string[]) => {
+const handleCommand = async (args: string[]) => {
   if (args[0] === "") {
     history.value.push({ id: nanoid(), type: "system", content: "$" });
     return;
   }
 
   try {
-    validateCommand(args[0]);
+    validateCommand(args[0], args.slice(1));
+    const result = await execCommand(args[0], history, args.slice(1));
 
-    execCommand(args[0], history, args.slice(1));
+    if (result) {
+      history.value.push({
+        id: nanoid(),
+        type: "weather",
+        command: args.join(" "),
+        weather: result,
+      });
+    }
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     history.value.push({

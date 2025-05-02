@@ -18,4 +18,9 @@ export default defineNuxtConfig({
   imports: {
     presets: [{ from: "nanoid", imports: ["nanoid"] }],
   },
+  runtimeConfig: {
+    public: {
+      openWeatherApi: "",
+    }
+  },
 });

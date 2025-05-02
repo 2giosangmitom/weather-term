@@ -1,17 +1,33 @@
 const commands: ICommand[] = [
+  {
+    name: "weather",
+    desc: "Show current weather for a city",
+    args: ["city", "country code"],
+  },
   { name: "clear", desc: "Clear terminal history" },
   { name: "help", desc: "Show this help message" },
   { name: "about", desc: "About this app" },
 ];
 
-export function validateCommand(command: string) {
-  const isValid = commands.some((cmd) => cmd.name === command);
-  if (!isValid) {
+export function validateCommand(command: string, args: string[]) {
+  let found = false;
+
+  for (const cmd of commands) {
+    if (cmd.name === command) {
+      found = true;
+      if (cmd.args && args.length !== cmd.args.length) {
+        throw new Error(`Missing arguments for ${command}`);
+      }
+      break;
+    }
+  }
+
+  if (!found) {
     throw new Error(`${command} is not a valid command`);
   }
 }
 
-export function execCommand(
+export async function execCommand(
   command: string,
   history: Ref<IHistory[]>,
   args?: string[]
@@ -24,14 +40,27 @@ export function execCommand(
     const cmdNames = commands.map(
       (cmd) =>
         `  ${cmd.name}${
-          cmd.args ? " " + cmd.args.map((v) => `<${v}>`).join(" ") : ""
+          cmd.args ? " " + cmd.args.map((v) => `&lt;${v}&gt;`).join(" ") : ""
         }`
     );
-    const maxLength = Math.max(...cmdNames.map((line) => line.length));
+    const maxLength = Math.max(
+      ...cmdNames.map((line) => {
+        line = line.replaceAll("&lt;", "<");
+        line = line.replaceAll("&gt;", ">");
+
+        return line.length;
+      })
+    );
 
     // Format each line with padding
     for (let i = 0; i < commands.length; i++) {
-      const namePart = cmdNames[i].padEnd(maxLength + 4); // +2 for spacing before the dash
+      let temp = cmdNames[i];
+      temp = temp.replaceAll("&lt;", "<");
+      temp = temp.replaceAll("&gt;", ">");
+
+      const len = temp.length;
+
+      const namePart = cmdNames[i] + " ".repeat(maxLength - len + 4);
       resultLines.push(`${namePart}- ${commands[i].desc}`);
     }
 
@@ -41,11 +70,13 @@ export function execCommand(
       content: resultLines.join("\n"),
       command,
     });
+
     return;
   }
 
   if (command === "clear") {
     history.value = [];
+
     return;
   }
 
@@ -63,6 +94,15 @@ GitHub: <a href="https://github.com/2giosangmitom" target="_blank" class="text-g
       content: aboutMessage,
       command,
     });
+
     return;
+  }
+
+  if (command === "weather") {
+    if (!args) {
+      return;
+    }
+    const data = await getWeatherData(args[0], args[1]);
+    return data;
   }
 }
