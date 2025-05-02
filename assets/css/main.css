@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-mono: "Fira Code", monospace;
+}
+
+:root {
+  --ui-text: #a6d189;
+  --ui-text-highlighted: #bac2de;
+
+  --ui-bg: #11111b;
+  --ui-bg-elevated: #313244;
+
+  --ui-border: #585b70;
+}
+
+* {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 16px;
+}
