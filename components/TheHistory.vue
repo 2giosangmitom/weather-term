@@ -7,7 +7,8 @@
       <span>$</span>
       <p>{{ historyItem.command }}</p>
     </div>
-    <p v-text="historyItem.content" />
+    <pre v-html="historyItem.content" />
+    <br>
   </div>
 </template>
 

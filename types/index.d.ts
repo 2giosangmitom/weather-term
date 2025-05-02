@@ -5,12 +5,8 @@ interface IHistory {
   command?: string;
 }
 
-interface ICommandArgument {
-  name: string;
-}
-
 interface ICommand {
   name: string;
-  args?: ICommandArgument[];
+  args?: string[];
   desc: string;
 }

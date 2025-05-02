@@ -16,7 +16,7 @@
             color="neutral"
             size="md"
             class="cursor-pointer"
-            @click="clearScreen"
+            @click="history = []"
           />
         </UTooltip>
       </div>
@@ -48,10 +48,6 @@ const history = ref<IHistory[]>([
   },
 ]);
 
-const clearScreen = () => {
-  history.value = [];
-};
-
 const handleCommand = (args: string[]) => {
   if (args[0] === "") {
     history.value.push({ id: nanoid(), type: "system", content: "$" });
@@ -60,6 +56,8 @@ const handleCommand = (args: string[]) => {
 
   try {
     validateCommand(args[0]);
+
+    execCommand(args[0], history, args.slice(1));
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     history.value.push({
