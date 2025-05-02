@@ -2,27 +2,15 @@ const commands: ICommand[] = [
   {
     name: "weather",
     desc: "Show current weather for a city",
-    args: ["city", "country code"],
+    args: ["city name", "state", "country code"],
   },
   { name: "clear", desc: "Clear terminal history" },
   { name: "help", desc: "Show this help message" },
   { name: "about", desc: "About this app" },
 ];
 
-export function validateCommand(command: string, args: string[]) {
-  let found = false;
-
-  for (const cmd of commands) {
-    if (cmd.name === command) {
-      found = true;
-      if (cmd.args && args.length !== cmd.args.length) {
-        throw new Error(`Missing arguments for ${command}`);
-      }
-      break;
-    }
-  }
-
-  if (!found) {
+export function validateCommand(command: string) {
+  if (!commands.some((cmd) => cmd.name === command)) {
     throw new Error(`${command} is not a valid command`);
   }
 }
@@ -30,79 +18,102 @@ export function validateCommand(command: string, args: string[]) {
 export async function execCommand(
   command: string,
   history: Ref<IHistory[]>,
-  args?: string[]
+  args: string[] = []
 ) {
-  if (command === "help") {
-    const resultLines = [];
-    resultLines.push("Available commands:");
+  switch (command) {
+    case "help": {
+      const resultLines: string[] = ["Available commands:"];
 
-    // Find the longest command+args length to align descriptions
-    const cmdNames = commands.map(
-      (cmd) =>
-        `  ${cmd.name}${
-          cmd.args ? " " + cmd.args.map((v) => `&lt;${v}&gt;`).join(" ") : ""
-        }`
-    );
-    const maxLength = Math.max(
-      ...cmdNames.map((line) => {
-        line = line.replaceAll("&lt;", "<");
-        line = line.replaceAll("&gt;", ">");
+      // Format and align command lines
+      const formatted = commands.map((cmd) => {
+        const usage = `  ${cmd.name}${
+          cmd.args ? " " + cmd.args.map((a) => `<${a}>`).join(" ") : ""
+        }`;
+        return { usage, desc: cmd.desc };
+      });
 
-        return line.length;
-      })
-    );
+      const maxLength = Math.max(...formatted.map((f) => f.usage.length));
 
-    // Format each line with padding
-    for (let i = 0; i < commands.length; i++) {
-      let temp = cmdNames[i];
-      temp = temp.replaceAll("&lt;", "<");
-      temp = temp.replaceAll("&gt;", ">");
+      for (const { usage, desc } of formatted) {
+        const padded = usage
+          .padEnd(maxLength + 4)
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;"); // spacing before dash
+        resultLines.push(`${padded}- ${desc}`);
+      }
 
-      const len = temp.length;
-
-      const namePart = cmdNames[i] + " ".repeat(maxLength - len + 4);
-      resultLines.push(`${namePart}- ${commands[i].desc}`);
+      history.value.push({
+        id: nanoid(),
+        type: "command",
+        content: resultLines.join("\n"),
+        command,
+      });
+      break;
     }
 
-    history.value.push({
-      id: nanoid(),
-      type: "command",
-      content: resultLines.join("\n"),
-      command,
-    });
+    case "clear": {
+      history.value = [];
+      break;
+    }
 
-    return;
-  }
-
-  if (command === "clear") {
-    history.value = [];
-
-    return;
-  }
-
-  if (command === "about") {
-    const aboutMessage = `
+    case "about": {
+      const aboutMessage = `
 A terminal-style weather application.
 Created with Nuxt.js and Tailwind CSS v4.
 
 Author: Vo Quang Chien
 GitHub: <a href="https://github.com/2giosangmitom" target="_blank" class="text-green-500 underline">https://github.com/2giosangmitom</a>`.trim();
 
-    history.value.push({
-      id: nanoid(),
-      type: "command",
-      content: aboutMessage,
-      command,
-    });
-
-    return;
-  }
-
-  if (command === "weather") {
-    if (!args) {
-      return;
+      history.value.push({
+        id: nanoid(),
+        type: "command",
+        content: aboutMessage,
+        command,
+      });
+      break;
     }
-    const data = await getWeatherData(args[0], args[1]);
-    return data;
+
+    case "weather": {
+      if (!args.length) {
+        history.value.push({
+          id: nanoid(),
+          type: "command",
+          content:
+            "Please provide a city name (and optionally state, country).",
+          command: "weather",
+        });
+        break;
+      }
+
+      try {
+        const data = await getWeatherData(args.join(","));
+        history.value.push({
+          id: nanoid(),
+          type: "weather",
+          command: `weather ${args.join(" ")}`,
+          weather: data,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to get weather data";
+        history.value.push({
+          id: nanoid(),
+          type: "command",
+          content: message,
+          command: `weather ${args.join(" ")}`,
+        });
+      }
+      break;
+    }
+
+    default: {
+      history.value.push({
+        id: nanoid(),
+        type: "command",
+        content: `${command} is not implemented`,
+        command,
+      });
+      break;
+    }
   }
 }

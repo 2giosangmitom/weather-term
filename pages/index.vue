@@ -1,5 +1,5 @@
 <template>
-  <div class="border h-screen">
+  <div class="border">
     <TheTerminal />
   </div>
 </template>

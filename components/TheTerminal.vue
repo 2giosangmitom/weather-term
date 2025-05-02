@@ -8,7 +8,7 @@
           <div class="w-3 h-3 bg-warning rounded-full" />
           <div class="w-3 h-3 bg-success rounded-full" />
         </div>
-        <p>Weather Term</p>
+        <h1>Weather Term</h1>
         <UTooltip text="Clear screen" arrow>
           <UButton
             icon="icon-park-outline:clear"
@@ -55,17 +55,8 @@ const handleCommand = async (args: string[]) => {
   }
 
   try {
-    validateCommand(args[0], args.slice(1));
-    const result = await execCommand(args[0], history, args.slice(1));
-
-    if (result) {
-      history.value.push({
-        id: nanoid(),
-        type: "weather",
-        command: args.join(" "),
-        weather: result,
-      });
-    }
+    validateCommand(args[0]);
+    await execCommand(args[0], history, args.slice(1));
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     history.value.push({

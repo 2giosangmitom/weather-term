@@ -15,7 +15,7 @@
   --ui-border: #585b70;
 }
 
-* {
+html {
   font-family: var(--font-mono);
   font-weight: 400;
   font-size: 16px;
