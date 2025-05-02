@@ -1,7 +1,7 @@
 <template>
-  <main>
-    <header class="border-b bg-zinc-900 p-2">
-      <!-- Title bar -->
+  <main class="h-screen flex flex-col">
+    <!-- Header bar -->
+    <header class="border-b bg-zinc-900 p-2 shrink-0">
       <div class="flex justify-between items-center">
         <div class="flex gap-2">
           <div class="w-3 h-3 bg-error rounded-full" />
@@ -16,14 +16,14 @@
             color="neutral"
             size="md"
             class="cursor-pointer"
-            @click="history = []"
+            @click="clearHistory"
           />
         </UTooltip>
       </div>
     </header>
 
-    <!-- Display information -->
-    <div class="p-3">
+    <!-- Terminal content area -->
+    <div class="flex-1 overflow-y-auto p-3">
       <TheHistory v-for="item of history" :key="item.id" :history-item="item" />
 
       <!-- Command input -->
@@ -47,6 +47,10 @@ const history = ref<IHistory[]>([
     content: `Type "help" for available commands.`,
   },
 ]);
+
+const clearHistory = () => {
+  history.value = [];
+};
 
 const handleCommand = async (args: string[]) => {
   if (args[0] === "") {
