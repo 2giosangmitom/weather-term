@@ -1,6 +1,8 @@
-# Nuxt Minimal Starter
+# Weather Term
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Weather app with terminal UI
+
+![preview](./preview.png)
 
 ## Setup
 
