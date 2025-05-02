@@ -15,4 +15,7 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@pinia/nuxt",
   ],
+  imports: {
+    presets: [{ from: "nanoid", imports: ["nanoid"] }],
+  },
 });
